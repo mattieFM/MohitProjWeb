@@ -55,8 +55,13 @@ const ToolFormUploadForm = (props:ToolFormUploadFormProps) => {
         return true;
     }
 
-    //the tool Data
-    const [toolData, _setToolData] = useState<ToolData[]>([new ToolData('')]);
+    //the tool Data. 2 results are required and cannot be removed
+    const [toolData, _setToolData] = useState<ToolData[]>(
+        [
+            new ToolData('').setCannotBeRemoved(true).setResolutionCannotBeRemoved(true,0),
+            new ToolData('').setCannotBeRemoved(true).setResolutionCannotBeRemoved(true,0)
+        ]
+    );
     const [files, setFiles] = useState<File[]>([]);
 
     /** @description wrap the setter for tool data to pass data upwards to any listening parents */
@@ -163,13 +168,15 @@ const ToolFormUploadForm = (props:ToolFormUploadFormProps) => {
 
     return (
         <div id="toolUploadComponentForm">
-            <InstructionHeader title="Upload Tool Data Files" />
+            <InstructionHeader title="Upload Loop Callers Results" />
+            {/* <p>Please submit atleast two results.</p> */}
             {toolData.map((tool, toolIndex) => (
                 <div key={`ToolContainer-${toolIndex}`} id={`ToolContainer-${toolIndex}`}>
                     <ToolNameInput key={`ToolNameInput-${toolIndex}`}
                         onInputChange={async (e) => handleInputChange(toolIndex, e)}
                         onToolRemove={async () => handleRemoveToolData(toolIndex)}
                         name={tool.name}
+                        cannotBeRemoved={toolData[toolIndex].cannotBeRemoved}
                     />
 
                     <Row>
@@ -199,15 +206,19 @@ const ToolFormUploadForm = (props:ToolFormUploadFormProps) => {
                     {tool.resolutions.map((resolution, resolutionIndex) => (
                         <Row key={`ToolContainer-ResolutionRow-${resolutionIndex}`} className='form-group row'>
                             <ResolutionInput
-                                resolution={resolution.resolution}
+                                resolution={resolution}
                                 handleResolutionChange={(e) => handleResolutionChange(toolIndex, resolutionIndex, e)}
                             />
+
                             <ToolFileInput
                                 onFileChange={(e) => handleFileChange(toolIndex, resolutionIndex, e)}
                             />
+
+                            {/* only display remove if resolution data obj allows it */}
+                            {!resolution.cannotBeRemoved ? 
                             <Col>
                                 <button type="button" className="btn btn-secondary" onClick={() => handleRemoveResolution(toolIndex, resolutionIndex)}>Remove</button>
-                            </Col>
+                            </Col> : <></>}
                         </Row>
                     ))}
                     <button type="button" className='btn btn-secondary' onClick={() => handleAddResolution(toolIndex)}>Add Additional Resolution</button>
